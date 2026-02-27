@@ -1,5 +1,140 @@
 import { useEffect, useState } from 'react'
-import { ArrowRightLeft, BarChart2, Calculator, Check, Clock, Copy, Hash } from 'lucide-react'
+
+type IconProps = {
+  size?: number
+  className?: string
+}
+
+const IconCalculator = ({ size = 24, className = '' }: IconProps) => (
+  <svg
+    width={size}
+    height={size}
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    className={className}
+  >
+    <rect width="16" height="20" x="4" y="2" rx="2" />
+    <line x1="8" x2="16" y1="6" y2="6" />
+    <line x1="16" x2="16" y1="14" y2="18" />
+    <path d="M16 10h.01" />
+    <path d="M12 10h.01" />
+    <path d="M8 10h.01" />
+    <path d="M12 14h.01" />
+    <path d="M8 14h.01" />
+    <path d="M12 18h.01" />
+    <path d="M8 18h.01" />
+  </svg>
+)
+
+const IconArrowRightLeft = ({ size = 24, className = '' }: IconProps) => (
+  <svg
+    width={size}
+    height={size}
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    className={className}
+  >
+    <path d="m16 3 4 4-4 4" />
+    <path d="M20 7H4" />
+    <path d="m8 21-4-4 4-4" />
+    <path d="M4 17h16" />
+  </svg>
+)
+
+const IconCopy = ({ size = 24, className = '' }: IconProps) => (
+  <svg
+    width={size}
+    height={size}
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    className={className}
+  >
+    <rect width="14" height="14" x="8" y="8" rx="2" ry="2" />
+    <path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2" />
+  </svg>
+)
+
+const IconCheck = ({ size = 24, className = '' }: IconProps) => (
+  <svg
+    width={size}
+    height={size}
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    className={className}
+  >
+    <path d="M20 6 9 17l-5-5" />
+  </svg>
+)
+
+const IconClock = ({ size = 24, className = '' }: IconProps) => (
+  <svg
+    width={size}
+    height={size}
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    className={className}
+  >
+    <circle cx="12" cy="12" r="10" />
+    <polyline points="12 6 12 12 16 14" />
+  </svg>
+)
+
+const IconBarChart2 = ({ size = 24, className = '' }: IconProps) => (
+  <svg
+    width={size}
+    height={size}
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    className={className}
+  >
+    <line x1="18" x2="18" y1="20" y2="10" />
+    <line x1="12" x2="12" y1="20" y2="4" />
+    <line x1="6" x2="6" y1="20" y2="14" />
+  </svg>
+)
+
+const IconHash = ({ size = 24, className = '' }: IconProps) => (
+  <svg
+    width={size}
+    height={size}
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    className={className}
+  >
+    <line x1="4" x2="20" y1="9" y2="9" />
+    <line x1="4" x2="20" y1="15" y2="15" />
+    <line x1="10" x2="8" y1="3" y2="21" />
+    <line x1="16" x2="14" y1="3" y2="21" />
+  </svg>
+)
 
 const RATES = {
   Low: 0.125,
@@ -14,9 +149,10 @@ type DetectedComplexity = {
   level: ComplexityLevel
   exactRate: number
   calculatedRate: number
+  isExact: boolean
 }
 
-function App() {
+export default function App() {
   const [activeTab, setActiveTab] = useState<'calculate' | 'reverse'>('calculate')
 
   const [hours, setHours] = useState('')
@@ -41,7 +177,7 @@ function App() {
     if (totalMins > 0 && activeTab === 'calculate') {
       const unitsOf30 = totalMins / 30
       const points = unitsOf30 * RATES[complexity]
-      setCalculatedPoints(parseFloat(points.toFixed(3)).toString())
+      setCalculatedPoints(parseFloat(points.toFixed(4)).toString())
     } else {
       setCalculatedPoints('0')
     }
@@ -54,18 +190,20 @@ function App() {
     if (totalMins > 0 && points > 0 && activeTab === 'reverse') {
       const unitsOf30 = totalMins / 30
       const ratePer30 = points / unitsOf30
+      const roundedRatePer30 = parseFloat(ratePer30.toFixed(4))
 
       let closestMatch: DetectedComplexity | null = null
       let minDiff = Infinity
 
       for (const [level, rate] of Object.entries(RATES)) {
-        const diff = Math.abs(rate - ratePer30)
+        const diff = Math.abs(rate - roundedRatePer30)
         if (diff < minDiff) {
           minDiff = diff
           closestMatch = {
             level: level as ComplexityLevel,
             exactRate: rate,
-            calculatedRate: ratePer30,
+            calculatedRate: roundedRatePer30,
+            isExact: diff < 0.000001,
           }
         }
       }
@@ -75,28 +213,26 @@ function App() {
     }
   }, [hours, minutes, assignedPoints, activeTab])
 
-  const handleCopy = async () => {
+  const handleCopy = () => {
     const textToCopy = calculatedPoints
 
+    const textArea = document.createElement('textarea')
+    textArea.value = textToCopy
+    textArea.style.position = 'fixed'
+    textArea.style.left = '-999999px'
+    textArea.style.top = '-999999px'
+    document.body.appendChild(textArea)
+    textArea.focus()
+    textArea.select()
+
     try {
-      if (navigator.clipboard?.writeText) {
-        await navigator.clipboard.writeText(textToCopy)
-      } else {
-        const textArea = document.createElement('textarea')
-        textArea.value = textToCopy
-        textArea.style.position = 'fixed'
-        textArea.style.left = '-999999px'
-        textArea.style.top = '-999999px'
-        document.body.appendChild(textArea)
-        textArea.focus()
-        textArea.select()
-        document.execCommand('copy')
-        textArea.remove()
-      }
+      document.execCommand('copy')
       setCopied(true)
       setTimeout(() => setCopied(false), 2000)
     } catch (error) {
       console.error('Copy failed', error)
+    } finally {
+      textArea.remove()
     }
   }
 
@@ -105,7 +241,7 @@ function App() {
       <div className="w-full max-w-md bg-white rounded-2xl shadow-xl overflow-hidden border border-slate-100">
         <div className="bg-indigo-600 p-6 text-white text-center">
           <h1 className="text-2xl font-bold flex items-center justify-center gap-2">
-            <Calculator size={28} />
+            <IconCalculator size={28} />
             Story Point Tools
           </h1>
           <p className="text-indigo-200 text-sm mt-1">Calculate or evaluate task complexity</p>
@@ -120,7 +256,7 @@ function App() {
                 : 'text-slate-500 hover:text-slate-700 hover:bg-slate-100'
             }`}
           >
-            <Calculator size={18} />
+            <IconCalculator size={18} />
             Find Points
           </button>
           <button
@@ -131,7 +267,7 @@ function App() {
                 : 'text-slate-500 hover:text-slate-700 hover:bg-slate-100'
             }`}
           >
-            <ArrowRightLeft size={18} />
+            <IconArrowRightLeft size={18} />
             Find Level
           </button>
         </div>
@@ -139,7 +275,7 @@ function App() {
         <div className="p-6 space-y-6">
           <div className="space-y-3">
             <label className="text-sm font-semibold text-slate-700 flex items-center gap-2">
-              <Clock size={16} className="text-indigo-500" />
+              <IconClock size={16} className="text-indigo-500" />
               Time Estimated/Spent
             </label>
             <div className="flex gap-4">
@@ -179,7 +315,7 @@ function App() {
             <div className="space-y-6 animate-in fade-in slide-in-from-bottom-2 duration-300">
               <div className="space-y-3">
                 <label className="text-sm font-semibold text-slate-700 flex items-center gap-2">
-                  <BarChart2 size={16} className="text-indigo-500" />
+                  <IconBarChart2 size={16} className="text-indigo-500" />
                   Task Complexity
                 </label>
                 <div className="grid grid-cols-2 gap-3">
@@ -219,7 +355,7 @@ function App() {
                         : 'bg-indigo-600 text-white hover:bg-indigo-700 shadow-md shadow-indigo-600/20 hover:shadow-lg hover:shadow-indigo-600/30 active:scale-95'
                   }`}
                 >
-                  {copied ? <Check size={18} /> : <Copy size={18} />}
+                  {copied ? <IconCheck size={18} /> : <IconCopy size={18} />}
                   {copied ? 'Copied!' : 'Copy Result'}
                 </button>
               </div>
@@ -230,7 +366,7 @@ function App() {
             <div className="space-y-6 animate-in fade-in slide-in-from-bottom-2 duration-300">
               <div className="space-y-3">
                 <label className="text-sm font-semibold text-slate-700 flex items-center gap-2">
-                  <Hash size={16} className="text-indigo-500" />
+                  <IconHash size={16} className="text-indigo-500" />
                   Assigned Story Points
                 </label>
                 <div className="relative">
@@ -244,7 +380,7 @@ function App() {
                     placeholder="e.g. 2.5"
                   />
                   <div className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400">
-                    <Calculator size={20} />
+                    <IconCalculator size={20} />
                   </div>
                 </div>
               </div>
@@ -261,15 +397,19 @@ function App() {
                 ) : (
                   <div className="text-center space-y-2">
                     <p className="text-indigo-600/80 text-sm font-semibold uppercase tracking-wider">Detected Level</p>
-                    <div className="text-3xl font-bold text-indigo-900">{detectedComplexity.level}</div>
+                    <div className="text-3xl font-bold text-indigo-900">
+                      {!detectedComplexity.isExact
+                        ? `Averaged - ${detectedComplexity.calculatedRate}`
+                        : detectedComplexity.level}
+                    </div>
                     <p className="text-slate-500 text-sm mt-2">
-                      Base rate matched:{' '}
-                      <span className="font-semibold text-slate-700">{RATES[detectedComplexity.level]}</span> pts /
-                      30m
+                      {!detectedComplexity.isExact ? 'Closest level match: ' : 'Base rate matched: '}
+                      <span className="font-semibold text-slate-700">{detectedComplexity.level}</span> (
+                      {RATES[detectedComplexity.level]} pts / 30m)
                     </p>
-                    {Math.abs(detectedComplexity.exactRate - detectedComplexity.calculatedRate) > 0.01 && (
+                    {!detectedComplexity.isExact && (
                       <p className="text-xs text-amber-600 bg-amber-50 inline-block px-3 py-1 rounded-full mt-2 border border-amber-200">
-                        *Points were likely rounded by the manager
+                        * Note: Points were averaged or rounded
                       </p>
                     )}
                   </div>
@@ -282,5 +422,3 @@ function App() {
     </div>
   )
 }
-
-export default App
