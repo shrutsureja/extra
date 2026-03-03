@@ -500,6 +500,10 @@ export default function App() {
               </div>
             </div>
           )}
+
+          <p className="text-center text-xs text-slate-500 pt-2">
+            made for team with ♥
+          </p>
         </div>
       </div>
     </div>
