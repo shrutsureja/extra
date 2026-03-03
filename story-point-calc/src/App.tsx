@@ -288,8 +288,9 @@ export default function App() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-50 flex items-center justify-center p-4 font-sans text-slate-800">
-      <div className="w-full max-w-md bg-white rounded-2xl shadow-xl overflow-hidden border border-slate-100">
+    <div className="min-h-screen bg-slate-50 flex flex-col p-4 font-sans text-slate-800">
+      <div className="flex-1 flex items-center justify-center">
+        <div className="w-full max-w-md bg-white rounded-2xl shadow-xl overflow-hidden border border-slate-100">
         <div className="bg-indigo-600 p-6 text-white text-center">
           <h1 className="text-2xl font-bold flex items-center justify-center gap-2">
             <IconCalculator size={28} />
@@ -501,11 +502,10 @@ export default function App() {
             </div>
           )}
 
-          <p className="text-center text-xs text-slate-500 pt-2">
-            made for team with ♥
-          </p>
         </div>
       </div>
+    </div>
+      <p className="text-center text-xs text-slate-500 mt-4">Built by AI for Chatomate 😉</p>
     </div>
   )
 }
