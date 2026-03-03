@@ -5,6 +5,30 @@ type IconProps = {
   className?: string
 }
 
+type Team = 'development' | 'techSupport'
+type ActiveTab = 'calculate' | 'reverse'
+
+type TeamRates = {
+  Low: number
+  Medium: number
+  High: number
+  Advanced: number
+}
+
+type Rates = {
+  development: TeamRates
+  techSupport: TeamRates
+}
+
+type ComplexityLevel = keyof TeamRates
+
+type DetectedComplexity = {
+  level: ComplexityLevel
+  exactRate: number
+  calculatedRate: number
+  isExact: boolean
+}
+
 const IconCalculator = ({ size = 24, className = '' }: IconProps) => (
   <svg
     width={size}
@@ -136,25 +160,47 @@ const IconHash = ({ size = 24, className = '' }: IconProps) => (
   </svg>
 )
 
-const RATES = {
-  Low: 0.125,
-  Medium: 0.156,
-  High: 0.195,
-  Advanced: 0.244,
-} as const
+const IconUsers = ({ size = 24, className = '' }: IconProps) => (
+  <svg
+    width={size}
+    height={size}
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    className={className}
+  >
+    <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
+    <circle cx="9" cy="7" r="4" />
+    <path d="M22 21v-2a4 4 0 0 0-3-3.87" />
+    <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+  </svg>
+)
 
-type ComplexityLevel = keyof typeof RATES
-
-type DetectedComplexity = {
-  level: ComplexityLevel
-  exactRate: number
-  calculatedRate: number
-  isExact: boolean
+const RATES: Rates = {
+  development: {
+    Low: 0.125,
+    Medium: 0.156,
+    High: 0.195,
+    Advanced: 0.244,
+  },
+  techSupport: {
+    Low: 0.156,
+    Medium: 0.195,
+    High: 0.244,
+    Advanced: 0.305,
+  },
 }
 
 export default function App() {
-  const [activeTab, setActiveTab] = useState<'calculate' | 'reverse'>('calculate')
+  const [activeTab, setActiveTab] = useState<ActiveTab>('calculate')
 
+  const [team, setTeam] = useState<Team>(() => {
+    const savedTeam = localStorage.getItem('storyPointTeam')
+    return savedTeam === 'techSupport' ? 'techSupport' : 'development'
+  })
   const [hours, setHours] = useState('')
   const [minutes, setMinutes] = useState('')
 
@@ -166,6 +212,10 @@ export default function App() {
 
   const [copied, setCopied] = useState(false)
 
+  useEffect(() => {
+    localStorage.setItem('storyPointTeam', team)
+  }, [team])
+
   const getTotalMinutes = () => {
     const h = parseInt(hours || '0', 10)
     const m = parseInt(minutes || '0', 10)
@@ -176,12 +226,12 @@ export default function App() {
     const totalMins = getTotalMinutes()
     if (totalMins > 0 && activeTab === 'calculate') {
       const unitsOf30 = totalMins / 30
-      const points = unitsOf30 * RATES[complexity]
+      const points = unitsOf30 * RATES[team][complexity]
       setCalculatedPoints(parseFloat(points.toFixed(4)).toString())
     } else {
       setCalculatedPoints('0')
     }
-  }, [hours, minutes, complexity, activeTab])
+  }, [hours, minutes, complexity, activeTab, team])
 
   useEffect(() => {
     const totalMins = getTotalMinutes()
@@ -195,15 +245,16 @@ export default function App() {
       let closestMatch: DetectedComplexity | null = null
       let minDiff = Infinity
 
-      for (const [level, rate] of Object.entries(RATES)) {
+      for (const [level, rate] of Object.entries(RATES[team])) {
         const diff = Math.abs(rate - roundedRatePer30)
         if (diff < minDiff) {
           minDiff = diff
+          const isExact = diff < 0.000001
           closestMatch = {
             level: level as ComplexityLevel,
             exactRate: rate,
             calculatedRate: roundedRatePer30,
-            isExact: diff < 0.000001,
+            isExact,
           }
         }
       }
@@ -211,7 +262,7 @@ export default function App() {
     } else {
       setDetectedComplexity(null)
     }
-  }, [hours, minutes, assignedPoints, activeTab])
+  }, [hours, minutes, assignedPoints, activeTab, team])
 
   const handleCopy = () => {
     const textToCopy = calculatedPoints
@@ -275,6 +326,37 @@ export default function App() {
         <div className="p-6 space-y-6">
           <div className="space-y-3">
             <label className="text-sm font-semibold text-slate-700 flex items-center gap-2">
+              <IconUsers size={16} className="text-indigo-500" />
+              Select Team
+            </label>
+            <div className="relative flex bg-slate-100 p-1 rounded-xl">
+              <div
+                className={`absolute inset-y-1 left-1 w-[calc(50%-0.25rem)] bg-white rounded-lg shadow-sm transition-transform duration-300 ease-in-out ${
+                  team === 'techSupport' ? 'translate-x-full' : 'translate-x-0'
+                }`}
+              />
+
+              <button
+                onClick={() => setTeam('development')}
+                className={`relative z-10 flex-1 py-2 text-sm font-medium rounded-lg transition-colors duration-300 ${
+                  team === 'development' ? 'text-indigo-700' : 'text-slate-500 hover:text-slate-700'
+                }`}
+              >
+                Development
+              </button>
+              <button
+                onClick={() => setTeam('techSupport')}
+                className={`relative z-10 flex-1 py-2 text-sm font-medium rounded-lg transition-colors duration-300 ${
+                  team === 'techSupport' ? 'text-indigo-700' : 'text-slate-500 hover:text-slate-700'
+                }`}
+              >
+                Tech Support
+              </button>
+            </div>
+          </div>
+
+          <div className="space-y-3">
+            <label className="text-sm font-semibold text-slate-700 flex items-center gap-2">
               <IconClock size={16} className="text-indigo-500" />
               Time Estimated/Spent
             </label>
@@ -319,7 +401,7 @@ export default function App() {
                   Task Complexity
                 </label>
                 <div className="grid grid-cols-2 gap-3">
-                  {(Object.keys(RATES) as ComplexityLevel[]).map((level) => (
+                  {(Object.keys(RATES[team]) as ComplexityLevel[]).map((level) => (
                     <button
                       key={level}
                       onClick={() => setComplexity(level)}
@@ -331,7 +413,7 @@ export default function App() {
                     >
                       <span className="text-sm font-medium">{level}</span>
                       <span className={`text-xs ${complexity === level ? 'text-indigo-500' : 'text-slate-400'}`}>
-                        {RATES[level]} pts/30m
+                        {RATES[team][level]} pts/30m
                       </span>
                     </button>
                   ))}
@@ -405,8 +487,9 @@ export default function App() {
                     <p className="text-slate-500 text-sm mt-2">
                       {!detectedComplexity.isExact ? 'Closest level match: ' : 'Base rate matched: '}
                       <span className="font-semibold text-slate-700">{detectedComplexity.level}</span> (
-                      {RATES[detectedComplexity.level]} pts / 30m)
+                      {RATES[team][detectedComplexity.level]} pts / 30m)
                     </p>
+
                     {!detectedComplexity.isExact && (
                       <p className="text-xs text-amber-600 bg-amber-50 inline-block px-3 py-1 rounded-full mt-2 border border-amber-200">
                         * Note: Points were averaged or rounded
